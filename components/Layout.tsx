@@ -2,7 +2,6 @@ import clsx from 'clsx'
 import Head from 'next/head'
 import type { ReactNode } from 'react'
 import type { PageMetadata } from 'utils/layout'
-
 import { DefaultAppSeo } from './DefaultAppSeo'
 // import { Issuebar } from './Issuebar'
 import { Sidebar } from './Sidebar'
