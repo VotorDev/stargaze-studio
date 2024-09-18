@@ -1,7 +1,6 @@
 import clsx from 'clsx'
 import Head from 'next/head'
 import type { ReactNode } from 'react'
-import { FaDesktop } from 'react-icons/fa'
 import type { PageMetadata } from 'utils/layout'
 
 import { DefaultAppSeo } from './DefaultAppSeo'
