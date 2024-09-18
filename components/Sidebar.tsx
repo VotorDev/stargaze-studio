@@ -120,7 +120,7 @@ export const Sidebar = () => {
               <Conditional test={NETWORK === 'mainnet'}>
                 <li className={clsx('text-lg font-bold hover:text-white hover:bg-stargaze-80 rounded')} tabIndex={-1}>
                   <label
-                    className="w-full h-full text-lg font-bold text-gray hover:text-white normal-case bg-clip-text bg-transparent border-none animate-none btn modal-button"
+                    className="w-full h-full text-lg font-bold text-gray hover:text-white normal-case bg-clip-text bg-dark border-none animate-none btn modal-button"
                     htmlFor="my-modal-1"
                   >
                     Revenue Dashboard
@@ -131,11 +131,11 @@ export const Sidebar = () => {
           </li>
         </ul>
         <Conditional test={BADGE_HUB_ADDRESS !== undefined}>
-          <ul className="group py-1 px-2 w-full bg-transparent menu rounded-box">
+          <ul className="group py-1 px-2 w-full bg-dark menu rounded-box">
             <li tabIndex={0}>
               <span
                 className={clsx(
-                  'z-40 text-xl font-bold group-hover:text-white bg-transparent rounded-lg small-caps',
+                  'z-40 text-xl font-bold group-hover:text-white bg-dark rounded-lg small-caps',
                   'hover:bg-white/5 transition-colors',
                   router.asPath.includes('/badges/') ? 'text-white' : 'text-gray',
                 )}
@@ -174,11 +174,11 @@ export const Sidebar = () => {
             </li>
           </ul>
         </Conditional>
-        <ul className="group p-2 w-full bg-transparent menu rounded-box">
+        <ul className="group p-2 w-full bg-dark menu rounded-box">
           <li tabIndex={0}>
             <span
               className={clsx(
-                'z-40 text-xl font-bold group-hover:text-white bg-transparent rounded-lg small-caps',
+                'z-40 text-xl font-bold group-hover:text-white bg-dark rounded-lg small-caps',
                 'hover:bg-white/5 transition-colors',
                 router.asPath.includes('/tokenfactory') ? 'text-white' : 'text-gray',
               )}
@@ -208,11 +208,11 @@ export const Sidebar = () => {
             </ul>
           </li>
         </ul>
-        <ul className="group py-1 px-2 w-full bg-transparent menu rounded-box">
+        <ul className="group py-1 px-2 w-full bg-dark menu rounded-box">
           <li tabIndex={0}>
             <span
               className={clsx(
-                'z-40 text-xl font-bold group-hover:text-white bg-transparent rounded-lg small-caps',
+                'z-40 text-xl font-bold group-hover:text-white bg-dark rounded-lg small-caps',
                 'hover:bg-white/5 transition-colors',
                 router.asPath.includes('/contracts/') ? 'text-white' : 'text-gray',
               )}
@@ -311,11 +311,11 @@ export const Sidebar = () => {
             </ul>
           </li>
         </ul>
-        <ul className="group py-1 px-2 w-full bg-transparent menu rounded-box">
+        <ul className="group py-1 px-2 w-full bg-dark menu rounded-box">
           <li tabIndex={0}>
             <span
               className={clsx(
-                'z-40 text-xl font-bold group-hover:text-white bg-transparent rounded-lg small-caps',
+                'z-40 text-xl font-bold group-hover:text-white bg-dark rounded-lg small-caps',
                 'hover:bg-white/5 transition-colors',
                 router.asPath.includes('/authz/') ? 'text-white' : 'text-gray',
               )}
