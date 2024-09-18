@@ -43,14 +43,7 @@ export const Layout = ({ children, metadata = {} }: LayoutProps) => {
         {/* <Issuebar /> */}
       </div>
 
-      <div className="flex flex-col justify-center items-center p-8 space-y-4 h-screen text-center bg-black/50 sm:hidden">
-        <FaDesktop size={48} />
-        <h1 className="text-2xl font-bold">Unsupported Viewport</h1>
-        <p>
-          Stargaze Studio is best viewed on the big screen.
-          <br />
-          Please open Stargaze Studio on your tablet or desktop browser.
-        </p>
+      <div className="flex flex-col justify-center items-center p-8 space-y-4 h-screen text-center bg-black/50">
       </div>
     </div>
   )
