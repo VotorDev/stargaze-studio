@@ -67,11 +67,11 @@ export const Sidebar = () => {
       {/* main navigation routes */}
 
       <div className={clsx('absolute left-[5%] mt-2', isTallWindow ? 'top-[20%]' : 'top-[30%]')}>
-        <ul className="group py-1 px-2 w-full bg-transparent menu rounded-box">
+        <ul className="group py-1 px-2 w-full bg-dark menu rounded-box">
           <li tabIndex={0}>
             <div
               className={clsx(
-                'z-40 text-xl font-bold group-hover:text-white bg-transparent rounded-lg small-caps',
+                'z-40 text-xl font-bold group-hover:text-white bg-dark rounded-lg small-caps',
                 'hover:bg-white/5 transition-colors',
                 router.asPath.includes('/collections/') ? 'text-white' : 'text-gray',
               )}
