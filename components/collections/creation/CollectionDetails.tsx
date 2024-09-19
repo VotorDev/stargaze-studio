@@ -169,7 +169,7 @@ export const CollectionDetails = ({
   return (
     <div>
       <FormGroup subtitle="Information about your collection" title="Collection Details">
-        <div className={clsx(minterType === 'base' ? 'grid grid-cols-2 -ml-16 max-w-5xl' : '')}>
+        <div className={clsx(minterType === 'base' ? 'grid grid-cols-1 sm:grid-cols-2 -ml-16 max-w-5xl' : '')}>
           <div className={clsx(minterType === 'base' ? 'ml-0' : '')}>
             <TextInput {...nameState} isRequired />
             <TextInput className="mt-2" {...descriptionState} isRequired />
