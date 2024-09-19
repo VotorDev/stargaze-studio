@@ -524,7 +524,7 @@ export const CollectionActions = ({
 
   return (
     <form>
-      <div className="grid grid-cols-2 mt-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 mt-4">
         <div className="mr-2">
           <ActionsCombobox minterType={minterType} sg721Type={sg721Type} {...actionComboboxState} />
           {showRecipientField && <AddressInput {...recipientState} />}
