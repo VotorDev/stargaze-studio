@@ -148,7 +148,7 @@ export const MintingDetails = ({
           isRequired
           value={uploadMethod === 'new' ? numberOfTokens : numberOfTokensState.value}
         />
-        <div className="flex flex-row items-end mr-2">
+        <div className="flex flex-col sm:flex-row items-end mr-2">
           <NumberInput {...unitPriceState} isRequired />
           {/* <select
             className="py-[9px] px-4 ml-2 placeholder:text-white/50 bg-white/10 rounded border-2 border-white/20 focus:ring focus:ring-plumbus-20"
