@@ -2074,7 +2074,7 @@ const CollectionCreationPage: NextPage = () => {
             (minterType === 'base' && baseMinterDetails?.baseMinterAcquisitionMethod === 'new')
           }
         >
-          <div className="flex justify-between py-3 px-8 rounded border-2 border-white/20 grid-col-2">
+          <div className="flex justify-between py-3 px-8 rounded border-2 border-white/20 grid-col-1 md:grid-col-2">
             <Conditional
               test={
                 minterType === 'vending' ||
