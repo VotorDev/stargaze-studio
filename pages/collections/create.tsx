@@ -2053,8 +2053,8 @@ const CollectionCreationPage: NextPage = () => {
         </Conditional>
 
         <Conditional test={minterType === 'vending'}>
-          <div className="flex-row p-2 mb-3 w-full rounded border-2 border-white/20 form-control">
-            <label className="justify-start ml-8 w-2/5 cursor-pointer label">
+          <div className="flex flex-col p-2 mb-3 w-full rounded border-2 border-white/20 form-control">
+            <label className="w-full cursor-pointer label justify-start">
               <span className="mr-2 font-bold">Is this a featured collection?</span>
               <input
                 checked={isFeaturedCollection}
