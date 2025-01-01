@@ -122,6 +122,8 @@ const BadgeCreationPage: NextPage = () => {
           imageUploadDetails.pinataSecretKey as string,
           imageUploadDetails.web3StorageEmail as string,
           badgeDetails?.name as string,
+          imageUploadDetails.fleekClientId as string,
+          badgeDetails?.name as string,
         ).then((imageBaseUrl) => {
           setUploading(false)
           return `ipfs://${imageBaseUrl}/${imageUploadDetails.assetFile?.name as string}`
@@ -292,6 +294,9 @@ const BadgeCreationPage: NextPage = () => {
       ) {
         throw new Error('Please enter Pinata API and secret keys')
       }
+      if (imageUploadDetails.uploadService === 'fleek' && imageUploadDetails.fleekClientId === '') {
+        throw new Error('Please enter a valid Fleek client ID')
+      }
       if (imageUploadDetails.uploadService === 'web3-storage') {
         if (imageUploadDetails.web3StorageEmail === '' || !imageUploadDetails.web3StorageLoginSuccessful) {
           throw new Error('Please complete the login process for Web3.Storage')
@@ -326,13 +331,13 @@ const BadgeCreationPage: NextPage = () => {
     let privKey: Buffer
     do {
       privKey = crypto.randomBytes(32)
-    } while (!secp256k1.privateKeyVerify(privKey))
+    } while (!secp256k1.privateKeyVerify(new Uint8Array(privKey)))
 
     const privateKey = privKey.toString('hex')
     setCreatedBadgeKey(privateKey)
     console.log('Private Key: ', privateKey)
 
-    const publicKey = Buffer.from(secp256k1.publicKeyCreate(privKey)).toString('hex')
+    const publicKey = Buffer.from(secp256k1.publicKeyCreate(new Uint8Array(privKey))).toString('hex')
     setBadgeId(null)
     keyState.onChange(publicKey)
   }

@@ -8,7 +8,7 @@
 
 import { toUtf8 } from '@cosmjs/encoding'
 import type { Coin } from '@cosmjs/proto-signing'
-import { coin } from '@cosmjs/proto-signing'
+// import { coin } from '@cosmjs/proto-signing'
 import { Sidetab } from '@typeform/embed-react'
 import axios from 'axios'
 import clsx from 'clsx'
@@ -35,6 +35,11 @@ import { FormControl } from 'components/FormControl'
 import { LoadingModal } from 'components/LoadingModal'
 import type { OpenEditionMinterCreatorDataProps } from 'components/openEdition/OpenEditionMinterCreator'
 import { OpenEditionMinterCreator } from 'components/openEdition/OpenEditionMinterCreator'
+import type {
+  TokenMergeMinterCreatorDataProps,
+  TokenMergeMinterDetailsDataProps,
+} from 'components/tokenMerge/TokenMergeMinterCreator'
+import { TokenMergeMinterCreator } from 'components/tokenMerge/TokenMergeMinterCreator'
 import type { WhitelistFlexMember } from 'components/WhitelistFlexUpload'
 import {
   flexibleOpenEditionMinterList,
@@ -69,6 +74,7 @@ import {
   STARGAZE_URL,
   STRDST_SG721_CODE_ID,
   SYNC_COLLECTIONS_API_URL,
+  TOKEN_MERGE_FACTORY_ADDRESS,
   VENDING_FACTORY_ADDRESS,
   VENDING_FACTORY_FLEX_ADDRESS,
   VENDING_FACTORY_UPDATABLE_ADDRESS,
@@ -87,7 +93,7 @@ import type { MinterType } from '../../components/collections/actions/Combobox'
 import type { UploadMethod } from '../../components/collections/creation/UploadDetails'
 import { ConfirmationModal } from '../../components/ConfirmationModal'
 import type { OpenEditionMinterDetailsDataProps } from '../../components/openEdition/OpenEditionMinterCreator'
-import { stars, tokensList } from '../../config/token'
+import { ibcAtom, tokensList } from '../../config/token'
 import { getAssetType } from '../../utils/getAssetType'
 import { isValidAddress } from '../../utils/isValidAddress'
 
@@ -113,6 +119,7 @@ const CollectionCreationPage: NextPage = () => {
     royaltyDetails: RoyaltyDetailsDataProps
     baseMinterDetails: BaseMinterDetailsDataProps
     openEditionMinterDetails: OpenEditionMinterDetailsDataProps
+    tokenMergeMinterDetails: TokenMergeMinterDetailsDataProps
   }>()
 
   const [uploadDetails, setUploadDetails] = useState<UploadDetailsDataProps | null>(null)
@@ -123,6 +130,9 @@ const CollectionCreationPage: NextPage = () => {
   const [openEditionMinterDetails, setOpenEditionMinterDetails] = useState<OpenEditionMinterDetailsDataProps | null>(
     null,
   )
+  const [tokenMergeMinterCreatorData, setTokenMergeMinterCreatorData] =
+    useState<TokenMergeMinterCreatorDataProps | null>(null)
+  const [tokenMergeMinterDetails, setTokenMergeMinterDetails] = useState<TokenMergeMinterDetailsDataProps | null>(null)
   const [mintingDetails, setMintingDetails] = useState<MintingDetailsDataProps | null>(null)
   const [whitelistDetails, setWhitelistDetails] = useState<WhitelistDetailsDataProps | null>(null)
   const [royaltyDetails, setRoyaltyDetails] = useState<RoyaltyDetailsDataProps | null>(null)
@@ -132,6 +142,7 @@ const CollectionCreationPage: NextPage = () => {
   const [baseMinterCreationFee, setBaseMinterCreationFee] = useState<Coin | null>(null)
   const [vendingMinterUpdatableCreationFee, setVendingMinterUpdatableCreationFee] = useState<Coin | null>(null)
   const [openEditionMinterCreationFee, setOpenEditionMinterCreationFee] = useState<Coin | undefined>(undefined)
+  const [tokenMergeMinterCreationFee, setTokenMergeMinterCreationFee] = useState<Coin | undefined>(undefined)
   const [vendingMinterFlexCreationFee, setVendingMinterFlexCreationFee] = useState<Coin | null>(null)
   const [baseMinterUpdatableCreationFee, setBaseMinterUpdatableCreationFee] = useState<Coin | null>(null)
   const [minimumMintPrice, setMinimumMintPrice] = useState<string | null>('0')
@@ -139,11 +150,14 @@ const CollectionCreationPage: NextPage = () => {
   const [minimumOpenEditionMintPrice, setMinimumOpenEditionMintPrice] = useState<string | null>('0')
   const [minimumFlexMintPrice, setMinimumFlexMintPrice] = useState<string | null>('0')
 
-  const [mintTokenFromOpenEditionFactory, setMintTokenFromOpenEditionFactory] = useState<TokenInfo | undefined>(stars)
-  const [mintTokenFromVendingFactory, setMintTokenFromVendingFactory] = useState<TokenInfo | undefined>(stars)
+  const [mintTokenFromOpenEditionFactory, setMintTokenFromOpenEditionFactory] = useState<TokenInfo | undefined>(ibcAtom)
+  const [mintTokenFromVendingFactory, setMintTokenFromVendingFactory] = useState<TokenInfo | undefined>(ibcAtom)
   const [vendingFactoryAddress, setVendingFactoryAddress] = useState<string | null>(VENDING_FACTORY_ADDRESS)
   const [openEditionFactoryAddress, setOpenEditionFactoryAddress] = useState<string | undefined>(
     OPEN_EDITION_FACTORY_ADDRESS,
+  )
+  const [tokenMergeFactoryAddress, settokenMergeFactoryAddress] = useState<string | undefined>(
+    TOKEN_MERGE_FACTORY_ADDRESS,
   )
 
   const vendingFactoryMessages = useMemo(
@@ -326,6 +340,8 @@ const CollectionCreationPage: NextPage = () => {
           uploadDetails.pinataSecretKey as string,
           uploadDetails.web3StorageEmail as string,
           collectionDetails?.name as string,
+          uploadDetails.fleekClientId as string,
+          collectionDetails?.name as string,
         )
 
         setUploading(false)
@@ -382,6 +398,8 @@ const CollectionCreationPage: NextPage = () => {
           uploadDetails.pinataApiKey as string,
           uploadDetails.pinataSecretKey as string,
           uploadDetails.web3StorageEmail as string,
+          collectionDetails?.name as string,
+          uploadDetails.fleekClientId as string,
           collectionDetails?.name as string,
         )
 
@@ -524,30 +542,30 @@ const CollectionCreationPage: NextPage = () => {
   const instantiateWhitelist = async () => {
     if (!wallet.isWalletConnected) throw new Error('Wallet not connected')
     if (!whitelistContract) throw new Error('Contract not found')
-
+    console.log('whitelistDetails', whitelistDetails)
     if (whitelistDetails?.whitelistType === 'standard' || whitelistDetails?.whitelistType === 'flex') {
       const standardMsg = {
-        members: whitelistDetails.members,
-        start_time: whitelistDetails.startTime,
-        end_time: whitelistDetails.endTime,
-        mint_price: coin(
-          String(Number(whitelistDetails.unitPrice)),
-          mintTokenFromVendingFactory ? mintTokenFromVendingFactory.denom : 'ustars',
-        ),
-        per_address_limit: whitelistDetails.perAddressLimit,
+        members: whitelistDetails.members?.slice(0, whitelistDetails.stageCount),
+        stages: whitelistDetails.stages?.slice(0, whitelistDetails.stageCount).map((stage, index) => ({
+          name: stage.name || `Stage ${index + 1}`,
+          start_time: stage.startTime,
+          end_time: stage.endTime,
+          mint_price: stage.mintPrice,
+          per_address_limit: stage.perAddressLimit,
+        })),
         member_limit: whitelistDetails.memberLimit,
         admins: whitelistDetails.admins || [wallet.address],
         admins_mutable: whitelistDetails.adminsMutable,
       }
 
       const flexMsg = {
-        members: whitelistDetails.members,
-        start_time: whitelistDetails.startTime,
-        end_time: whitelistDetails.endTime,
-        mint_price: coin(
-          String(Number(whitelistDetails.unitPrice)),
-          mintTokenFromVendingFactory ? mintTokenFromVendingFactory.denom : 'ustars',
-        ),
+        members: whitelistDetails.members?.slice(0, whitelistDetails.stageCount),
+        stages: whitelistDetails.stages?.slice(0, whitelistDetails.stageCount).map((stage, index) => ({
+          name: stage.name || `Stage ${index + 1}`,
+          start_time: stage.startTime,
+          end_time: stage.endTime,
+          mint_price: stage.mintPrice,
+        })),
         member_limit: whitelistDetails.memberLimit,
         admins: whitelistDetails.admins || [wallet.address],
         admins_mutable: whitelistDetails.adminsMutable,
@@ -556,49 +574,57 @@ const CollectionCreationPage: NextPage = () => {
       const data = await whitelistContract.instantiate(
         whitelistDetails.whitelistType === 'standard' ? WHITELIST_CODE_ID : WHITELIST_FLEX_CODE_ID,
         whitelistDetails.whitelistType === 'standard' ? standardMsg : flexMsg,
-        'Stargaze Whitelist Contract',
+        'Stargaze Tiered Whitelist Contract',
         wallet.address,
       )
 
       return data.contractAddress
     } else if (whitelistDetails?.whitelistType === 'merkletree') {
-      const members = whitelistDetails.members as string[]
-      const membersCsv = members.join('\n')
-      const membersBlob = new Blob([membersCsv], { type: 'text/csv' })
-      const membersFile = new File([membersBlob], 'members.csv', { type: 'text/csv' })
-      const formData = new FormData()
-      formData.append('whitelist', membersFile)
-      const response = await toast
-        .promise(
-          axios.post(`${WHITELIST_MERKLE_TREE_API_URL}/create_whitelist`, formData, {
-            headers: {
-              'Content-Type': 'multipart/form-data',
-            },
-          }),
-          {
-            loading: 'Fetching merkle root hash...',
-            success: 'Merkle root fetched successfully.',
-            error: 'Error fetching root hash from Whitelist Merkle Tree API.',
-          },
-        )
-        .catch((error) => {
-          console.log('error', error)
-          throw new Error('Whitelist instantiation failed.')
-        })
+      const rootHashes = await Promise.all(
+        (whitelistDetails.members || []).slice(0, whitelistDetails.stageCount).map(async (memberList, index) => {
+          const members = memberList as string[]
+          const membersCsv = members.join('\n')
+          const membersBlob = new Blob([membersCsv], { type: 'text/csv' })
+          const membersFile = new File([membersBlob], `members_${index}.csv`, { type: 'text/csv' })
 
-      const rootHash = response.data.root_hash
-      console.log('rootHash', rootHash)
+          const formData = new FormData()
+          formData.append('whitelist', membersFile)
+          formData.append('stage_id', index.toString())
+
+          const response = await toast
+            .promise(
+              axios.post(`${WHITELIST_MERKLE_TREE_API_URL}/create_whitelist`, formData, {
+                headers: {
+                  'Content-Type': 'multipart/form-data',
+                },
+              }),
+              {
+                loading: `Fetching merkle root hash for WL Stage ${index + 1}...`,
+                success: `Merkle root hash for WL Stage ${index + 1} fetched successfully.`,
+                error: `Error fetching root hash from Whitelist Merkle Tree API for Stage ${index + 1}.`,
+              },
+            )
+            .catch((error) => {
+              console.error('error', error)
+              throw new Error('Whitelist instantiation failed.')
+            })
+          console.log(`Stage ${index + 1} root hash: `, response.data.root_hash)
+          return response.data.root_hash
+        }),
+      )
+
+      console.log('rootHashes: ', rootHashes)
 
       const merkleTreeMsg = {
-        merkle_root: rootHash,
-        merkle_tree_uri: null,
-        start_time: whitelistDetails.startTime,
-        end_time: whitelistDetails.endTime,
-        mint_price: coin(
-          String(Number(whitelistDetails.unitPrice)),
-          mintTokenFromVendingFactory ? mintTokenFromVendingFactory.denom : 'ustars',
-        ),
-        per_address_limit: whitelistDetails.perAddressLimit,
+        merkle_roots: rootHashes,
+        merkle_tree_uris: null,
+        stages: whitelistDetails.stages?.slice(0, whitelistDetails.stageCount).map((stage, index) => ({
+          name: stage.name || `Stage ${index + 1}`,
+          start_time: stage.startTime,
+          end_time: stage.endTime,
+          mint_price: stage.mintPrice,
+          per_address_limit: stage.perAddressLimit,
+        })),
         admins: whitelistDetails.admins || [wallet.address],
         admins_mutable: whitelistDetails.adminsMutable,
       }
@@ -606,48 +632,58 @@ const CollectionCreationPage: NextPage = () => {
       const data = await whitelistMerkleTreeContract?.instantiate(
         WHITELIST_MERKLE_TREE_CODE_ID,
         merkleTreeMsg,
-        'Stargaze Whitelist Merkle Tree Contract',
+        'Stargaze Tiered Whitelist Merkle Tree Contract',
         wallet.address,
       )
       return data?.contractAddress
     } else if (whitelistDetails?.whitelistType === 'merkletree-flex') {
-      const members = whitelistDetails.members as WhitelistFlexMember[]
-      const membersCsv = members.map((member) => `${member.address},${member.mint_count}`).join('\n')
-      const membersBlob = new Blob([`address,count\n${membersCsv}`], { type: 'text/csv' })
-      const membersFile = new File([membersBlob], 'members.csv', { type: 'text/csv' })
-      const formData = new FormData()
-      formData.append('whitelist', membersFile)
-      const response = await toast
-        .promise(
-          axios.post(`${WHITELIST_MERKLE_TREE_API_URL}/create_whitelist`, formData, {
-            headers: {
-              'Content-Type': 'multipart/form-data',
-            },
-          }),
-          {
-            loading: 'Fetching merkle root hash...',
-            success: 'Merkle root fetched successfully.',
-            error: 'Error fetching root hash from Whitelist Merkle Tree API.',
-          },
-        )
-        .catch((error) => {
-          console.log('error', error)
-          throw new Error('Whitelist instantiation failed.')
-        })
+      const rootHashes = await Promise.all(
+        (whitelistDetails.members || []).slice(0, whitelistDetails.stageCount).map(async (memberList, index) => {
+          const members = memberList as WhitelistFlexMember[]
 
-      const rootHash = response.data.root_hash
-      console.log('rootHash', rootHash)
+          const membersCsv = members.map((member) => `${member.address},${member.mint_count}`).join('\n')
+
+          const membersBlob = new Blob([`address,count\n${membersCsv}`], { type: 'text/csv' })
+          const membersFile = new File([membersBlob], `members_${index}.csv`, { type: 'text/csv' })
+
+          const formData = new FormData()
+          formData.append('whitelist', membersFile)
+          formData.append('stage_id', index.toString())
+
+          const response = await toast
+            .promise(
+              axios.post(`${WHITELIST_MERKLE_TREE_API_URL}/create_whitelist`, formData, {
+                headers: {
+                  'Content-Type': 'multipart/form-data',
+                },
+              }),
+              {
+                loading: `Fetching merkle root hash for WL Stage ${index + 1}...`,
+                success: `Merkle root hash for WL Stage ${index + 1} fetched successfully.`,
+                error: `Error fetching root hash from Whitelist Merkle Tree API for Stage ${index + 1}.`,
+              },
+            )
+            .catch((error) => {
+              console.error('error', error)
+              throw new Error('Whitelist instantiation failed.')
+            })
+          console.log(`Stage ${index + 1} root hash: `, response.data.root_hash)
+          return response.data.root_hash
+        }),
+      )
+
+      console.log('Root hashes:', rootHashes)
 
       const merkleTreeFlexMsg = {
-        merkle_root: rootHash,
-        merkle_tree_uri: null,
-        start_time: whitelistDetails.startTime,
-        end_time: whitelistDetails.endTime,
-        mint_price: coin(
-          String(Number(whitelistDetails.unitPrice)),
-          mintTokenFromVendingFactory ? mintTokenFromVendingFactory.denom : 'ustars',
-        ),
-        per_address_limit: whitelistDetails.perAddressLimit || 1,
+        merkle_roots: rootHashes,
+        merkle_tree_uris: null,
+        stages: whitelistDetails.stages?.slice(0, whitelistDetails.stageCount).map((stage, index) => ({
+          name: stage.name || `Stage ${index + 1}`,
+          start_time: stage.startTime,
+          end_time: stage.endTime,
+          mint_price: stage.mintPrice,
+          per_address_limit: 1,
+        })),
         admins: whitelistDetails.admins || [wallet.address],
         admins_mutable: whitelistDetails.adminsMutable,
       }
@@ -701,6 +737,7 @@ const CollectionCreationPage: NextPage = () => {
               mintingDetails?.selectedMintToken?.displayName === 'BRNCH' ||
               mintingDetails?.selectedMintToken?.displayName === 'CRBRUS' ||
               mintingDetails?.selectedMintToken?.displayName === 'ATOM' ||
+              mintingDetails?.selectedMintToken?.displayName === 'OSMO' ||
               isFeaturedCollection
             ? STRDST_SG721_CODE_ID
             : SG721_CODE_ID,
@@ -868,6 +905,8 @@ const CollectionCreationPage: NextPage = () => {
         uploadDetails.pinataSecretKey as string,
         uploadDetails.web3StorageEmail as string,
         collectionDetails?.name as string,
+        uploadDetails.fleekClientId as string,
+        collectionDetails?.name as string,
       )
         .then(async (assetUri: string) => {
           let thumbnailUri: string | undefined
@@ -879,6 +918,8 @@ const CollectionCreationPage: NextPage = () => {
               uploadDetails.pinataApiKey as string,
               uploadDetails.pinataSecretKey as string,
               uploadDetails.web3StorageEmail as string,
+              collectionDetails?.name as string,
+              uploadDetails.fleekClientId as string,
               collectionDetails?.name as string,
             )
           }
@@ -948,6 +989,8 @@ const CollectionCreationPage: NextPage = () => {
                     uploadDetails.pinataSecretKey as string,
                     uploadDetails.web3StorageEmail as string,
                     collectionDetails?.name as string,
+                    uploadDetails.fleekClientId as string,
+                    collectionDetails?.name as string,
                   )
                     .then(resolve)
                     .catch(reject)
@@ -1008,6 +1051,8 @@ const CollectionCreationPage: NextPage = () => {
                 uploadDetails.pinataSecretKey as string,
                 uploadDetails.web3StorageEmail as string,
                 collectionDetails?.name as string,
+                uploadDetails.fleekClientId as string,
+                collectionDetails?.name as string,
               )
                 .then(resolve)
                 .catch(reject)
@@ -1049,6 +1094,8 @@ const CollectionCreationPage: NextPage = () => {
         throw new Error('Please enter Pinata API and secret keys')
       } else if (uploadDetails.uploadService === 'web3-storage' && uploadDetails.web3StorageEmail?.toString() === '') {
         throw new Error('Please enter a valid Web3.Storage email')
+      } else if (uploadDetails.uploadService === 'fleek' && uploadDetails.fleekClientId === '') {
+        throw new Error('Please enter a valid Fleek client ID')
       }
       if (uploadDetails.uploadService === 'web3-storage' && !uploadDetails.web3StorageLoginSuccessful)
         throw new Error('Please complete the login process for Web3.Storage')
@@ -1190,44 +1237,44 @@ const CollectionCreationPage: NextPage = () => {
       }
     } else if (whitelistDetails.whitelistState === 'new') {
       if (whitelistDetails.members?.length === 0) throw new Error('Whitelist member list cannot be empty')
-      if (whitelistDetails.unitPrice === undefined) throw new Error('Whitelist unit price is required')
-      if (Number(whitelistDetails.unitPrice) < 0)
-        throw new Error('Invalid unit price: The unit price cannot be negative')
-      if (whitelistDetails.startTime === '') throw new Error('Start time is required')
-      if (whitelistDetails.endTime === '') throw new Error('End time is required')
-      if (
-        whitelistDetails.whitelistType === 'standard' &&
-        (!whitelistDetails.perAddressLimit || whitelistDetails.perAddressLimit === 0)
-      )
-        throw new Error('Per address limit is required')
-      if (
-        whitelistDetails.whitelistType !== 'merkletree' &&
-        whitelistDetails.whitelistType !== 'merkletree-flex' &&
-        (!whitelistDetails.memberLimit || whitelistDetails.memberLimit === 0)
-      )
-        throw new Error('Member limit is required')
-      if (Number(whitelistDetails.startTime) >= Number(whitelistDetails.endTime))
-        throw new Error('Whitelist start time cannot be equal to or later than the whitelist end time')
-      if (Number(whitelistDetails.startTime) !== Number(mintingDetails?.startTime))
-        throw new Error('Whitelist start time must be the same as the minting start time')
-      if (whitelistDetails.perAddressLimit && mintingDetails?.numTokens) {
-        if (mintingDetails.numTokens >= 100 && whitelistDetails.perAddressLimit > 50) {
-          throw Error(
-            `Invalid limit for tokens per address. Tokens per address limit cannot exceed 50 regardless of the total number of tokens.`,
-          )
-        } else if (
-          mintingDetails.numTokens >= 100 &&
-          whitelistDetails.perAddressLimit > Math.ceil((mintingDetails.numTokens / 100) * 3)
-        ) {
-          throw Error(
-            `Invalid limit for tokens per address. Tokens per address limit cannot exceed 3% of the total number of tokens in the collection.`,
-          )
-        } else if (mintingDetails.numTokens < 100 && whitelistDetails.perAddressLimit > 3) {
-          throw Error(
-            `Invalid limit for tokens per address. Tokens per address limit cannot exceed 3 for collections with less than 100 tokens in total.`,
-          )
-        }
-      }
+      // if (whitelistDetails.unitPrice === undefined) throw new Error('Whitelist unit price is required')
+      // if (Number(whitelistDetails.unitPrice) < 0)
+      //   throw new Error('Invalid unit price: The unit price cannot be negative')
+      // if (whitelistDetails.startTime === '') throw new Error('Start time is required')
+      // if (whitelistDetails.endTime === '') throw new Error('End time is required')
+      // if (
+      //   whitelistDetails.whitelistType === 'standard' &&
+      //   (!whitelistDetails.perAddressLimit || whitelistDetails.perAddressLimit === 0)
+      // )
+      //   throw new Error('Per address limit is required')
+      // if (
+      //   whitelistDetails.whitelistType !== 'merkletree' &&
+      //   whitelistDetails.whitelistType !== 'merkletree-flex' &&
+      //   (!whitelistDetails.memberLimit || whitelistDetails.memberLimit === 0)
+      // )
+      //   throw new Error('Member limit is required')
+      // if (Number(whitelistDetails.startTime) >= Number(whitelistDetails.endTime))
+      //   throw new Error('Whitelist start time cannot be equal to or later than the whitelist end time')
+      // if (Number(whitelistDetails.startTime) !== Number(mintingDetails?.startTime))
+      //   throw new Error('Whitelist start time must be the same as the minting start time')
+      // if (whitelistDetails.perAddressLimit && mintingDetails?.numTokens) {
+      //   if (mintingDetails.numTokens >= 100 && whitelistDetails.perAddressLimit > 50) {
+      //     throw Error(
+      //       `Invalid limit for tokens per address. Tokens per address limit cannot exceed 50 regardless of the total number of tokens.`,
+      //     )
+      //   } else if (
+      //     mintingDetails.numTokens >= 100 &&
+      //     whitelistDetails.perAddressLimit > Math.ceil((mintingDetails.numTokens / 100) * 3)
+      //   ) {
+      //     throw Error(
+      //       `Invalid limit for tokens per address. Tokens per address limit cannot exceed 3% of the total number of tokens in the collection.`,
+      //     )
+      //   } else if (mintingDetails.numTokens < 100 && whitelistDetails.perAddressLimit > 3) {
+      //     throw Error(
+      //       `Invalid limit for tokens per address. Tokens per address limit cannot exceed 3 for collections with less than 100 tokens in total.`,
+      //     )
+      //   }
+      // }
     }
   }
 
@@ -1328,6 +1375,15 @@ const CollectionCreationPage: NextPage = () => {
         })
       setOpenEditionMinterCreationFee(openEditionFactoryParameters?.params?.creation_fee)
       setMinimumOpenEditionMintPrice(openEditionFactoryParameters?.params?.min_mint_price?.amount)
+    }
+    if (TOKEN_MERGE_FACTORY_ADDRESS) {
+      const tokenMergeFactoryParameters = await client
+        .queryContractSmart(TOKEN_MERGE_FACTORY_ADDRESS, { params: {} })
+        .catch((error) => {
+          toast.error(`${error.message}`, { style: { maxWidth: 'none' } })
+          addLogItem({ id: uid(), message: error.message, type: 'Error', timestamp: new Date() })
+        })
+      setTokenMergeMinterCreationFee(tokenMergeFactoryParameters?.params?.creation_fee)
     }
     setInitialParametersFetched(true)
   }
@@ -1532,10 +1588,23 @@ const CollectionCreationPage: NextPage = () => {
       royaltyDetails,
       baseMinterDetails,
       openEditionMinterDetails,
+      tokenMergeMinterDetails,
       vendingMinterContractAddress,
-      baseTokenUri: `${baseTokenUri?.startsWith('ipfs://') ? baseTokenUri : `ipfs://${baseTokenUri}`}`,
+      baseTokenUri: `${
+        minterType === 'token-merge'
+          ? `ipfs://${tokenMergeMinterDetails?.baseTokenUri}`
+          : baseTokenUri?.startsWith('ipfs://')
+          ? baseTokenUri
+          : `ipfs://${baseTokenUri}`
+      }`,
       coverImageUrl:
-        uploadDetails?.uploadMethod === 'new'
+        minterType === 'token-merge'
+          ? tokenMergeMinterDetails?.uploadDetails?.uploadMethod === 'new'
+            ? `ipfs://${tokenMergeMinterDetails.coverImageUrl}/${
+                tokenMergeMinterDetails.collectionDetails?.imageFile[0]?.name as string
+              }`
+            : `ipfs://${tokenMergeMinterDetails?.coverImageUrl}`
+          : uploadDetails?.uploadMethod === 'new'
           ? `ipfs://${coverImageUrl}/${collectionDetails?.imageFile[0]?.name as string}`
           : `${coverImageUrl}`,
     }
@@ -1549,6 +1618,8 @@ const CollectionCreationPage: NextPage = () => {
           : ''
         : openEditionMinterDetails?.collectionDetails
         ? `${openEditionMinterDetails.collectionDetails.name}-`
+        : tokenMergeMinterDetails?.collectionDetails
+        ? `${tokenMergeMinterDetails.collectionDetails.name}-`
         : ''
     }configuration-${new Date().toLocaleString().replaceAll(',', '_')}.json`
     document.body.appendChild(element) // Required for this to work in FireFox
@@ -1574,9 +1645,15 @@ const CollectionCreationPage: NextPage = () => {
         details.openEditionMinterDetails.offChainMetadataUploadDetails.imageUrl =
           details.openEditionMinterDetails.coverImageUrl
       }
+      if (details.tokenMergeMinterDetails?.tokenMergeMinterContractAddress) {
+        details.tokenMergeMinterDetails.uploadDetails.uploadMethod = 'existing'
+        details.tokenMergeMinterDetails.uploadDetails.baseTokenURI = details.baseTokenUri
+        details.tokenMergeMinterDetails.uploadDetails.imageUrl = details.coverImageUrl
+      }
       if (NETWORK === 'mainnet') {
         if (details.collectionDetails.updatable) details.collectionDetails.updatable = false
         if (details.collectionDetails.updatable) details.openEditionMinterDetails.collectionDetails.updatable = false
+        if (details.collectionDetails.updatable) details.tokenMergeMinterDetails.collectionDetails.updatable = false
       }
 
       setImportedDetails(details)
@@ -1586,18 +1663,28 @@ const CollectionCreationPage: NextPage = () => {
 
   const syncCollections = useCallback(async () => {
     const collectionAddress =
-      minterType === 'openEdition' ? openEditionMinterCreatorData?.sg721ContractAddress : sg721ContractAddress
+      minterType === 'openEdition'
+        ? openEditionMinterCreatorData?.sg721ContractAddress
+        : minterType === 'token-merge'
+        ? tokenMergeMinterCreatorData?.sg721ContractAddress
+        : sg721ContractAddress
     if (collectionAddress && SYNC_COLLECTIONS_API_URL) {
       await axios.get(`${SYNC_COLLECTIONS_API_URL}/${collectionAddress}`).catch((error) => {
         console.error('Sync collections: ', error)
       })
     }
-  }, [minterType, openEditionMinterCreatorData?.sg721ContractAddress, sg721ContractAddress])
+  }, [
+    minterType,
+    openEditionMinterCreatorData?.sg721ContractAddress,
+    tokenMergeMinterCreatorData?.sg721ContractAddress,
+    sg721ContractAddress,
+  ])
 
   useEffect(() => {
     if (
       vendingMinterContractAddress !== null ||
       openEditionMinterCreatorData?.openEditionMinterContractAddress ||
+      tokenMergeMinterCreatorData?.tokenMergeMinterContractAddress ||
       isMintingComplete
     ) {
       scrollRef.current?.scrollIntoView({ behavior: 'smooth' })
@@ -1605,6 +1692,7 @@ const CollectionCreationPage: NextPage = () => {
     if (
       (minterType === 'vending' && vendingMinterContractAddress !== null) ||
       (minterType === 'openEdition' && openEditionMinterCreatorData?.openEditionMinterContractAddress) ||
+      (minterType === 'token-merge' && tokenMergeMinterCreatorData?.tokenMergeMinterContractAddress) ||
       (minterType === 'base' && vendingMinterContractAddress !== null && isMintingComplete)
     ) {
       void syncCollections()
@@ -1618,6 +1706,7 @@ const CollectionCreationPage: NextPage = () => {
   }, [
     vendingMinterContractAddress,
     openEditionMinterCreatorData?.openEditionMinterContractAddress,
+    tokenMergeMinterCreatorData?.tokenMergeMinterContractAddress,
     isMintingComplete,
     minterType,
     syncCollections,
@@ -1750,6 +1839,65 @@ const CollectionCreationPage: NextPage = () => {
                   className="text-white"
                   external
                   href={`${STARGAZE_URL}/launchpad/${openEditionMinterCreatorData?.sg721ContractAddress as string}`}
+                >
+                  View on Launchpad
+                </Anchor>
+              </Button>
+            </div>
+          </Alert>
+        </Conditional>
+        <Conditional
+          test={minterType === 'token-merge' && tokenMergeMinterCreatorData?.tokenMergeMinterContractAddress !== null}
+        >
+          <Alert className="mt-5" type="info">
+            <div>
+              Token Merge Minter Contract Address:{'  '}
+              <Anchor
+                className="text-stargaze hover:underline"
+                external
+                href={`/contracts/tokenMergeMinter/query/?contractAddress=${
+                  tokenMergeMinterCreatorData?.tokenMergeMinterContractAddress as string
+                }`}
+              >
+                {tokenMergeMinterCreatorData?.tokenMergeMinterContractAddress as string}
+              </Anchor>
+              <br />
+              SG721 Contract Address:{'  '}
+              <Anchor
+                className="text-stargaze hover:underline"
+                external
+                href={`/contracts/sg721/query/?contractAddress=${
+                  tokenMergeMinterCreatorData?.sg721ContractAddress as string
+                }`}
+              >
+                {tokenMergeMinterCreatorData?.sg721ContractAddress as string}
+              </Anchor>
+              <br />
+              Transaction Hash: {'  '}
+              <Conditional test={NETWORK === 'testnet'}>
+                <Anchor
+                  className="text-stargaze hover:underline"
+                  external
+                  href={`${BLOCK_EXPLORER_URL}/tx/${tokenMergeMinterCreatorData?.transactionHash as string}`}
+                >
+                  {tokenMergeMinterCreatorData?.transactionHash}
+                </Anchor>
+              </Conditional>
+              <Conditional test={NETWORK === 'mainnet'}>
+                <Anchor
+                  className="text-stargaze hover:underline"
+                  external
+                  href={`${BLOCK_EXPLORER_URL}/txs/${tokenMergeMinterCreatorData?.transactionHash as string}`}
+                >
+                  {tokenMergeMinterCreatorData?.transactionHash}
+                </Anchor>
+              </Conditional>
+              <br />
+              <Button className="mt-2">
+                <Anchor
+                  className="text-white"
+                  external
+                  href={`${STARGAZE_URL}/launchpad/${tokenMergeMinterCreatorData?.sg721ContractAddress as string}`}
                 >
                   View on Launchpad
                 </Anchor>
@@ -1932,7 +2080,7 @@ const CollectionCreationPage: NextPage = () => {
         <div
           className={clsx(
             'mx-10 mt-5',
-            'grid before:absolute relative grid-cols-3 grid-flow-col items-stretch rounded',
+            'grid before:absolute relative grid-cols-4 grid-flow-col items-stretch rounded',
             'before:inset-x-0 before:bottom-0  before:border-white/25',
             minterType !== 'base' ? 'rounded-none border-b-2 border-white/25' : 'border-0',
           )}
@@ -1954,7 +2102,7 @@ const CollectionCreationPage: NextPage = () => {
               type="button"
             >
               <h4 className="font-bold">Standard Collection</h4>
-              <span className="text-sm text-white/80 line-clamp-2">
+              <span className="text-sm text-white/80 line-clamp-2 hover:line-clamp-3">
                 A non-appendable collection that facilitates primary market vending machine style minting
               </span>
             </button>
@@ -1976,7 +2124,7 @@ const CollectionCreationPage: NextPage = () => {
               type="button"
             >
               <h4 className="font-bold">1/1 Collection</h4>
-              <span className="text-sm text-white/80 line-clamp-2">
+              <span className="text-sm text-white/80 line-clamp-2 hover:line-clamp-3">
                 An appendable collection that only allows for direct secondary market listing of tokens
               </span>
             </button>
@@ -2000,8 +2148,32 @@ const CollectionCreationPage: NextPage = () => {
               type="button"
             >
               <h4 className="font-bold">Open Edition Collection</h4>
-              <span className="text-sm text-white/80 line-clamp-2">
+              <span className="text-sm text-white/80 line-clamp-2 hover:line-clamp-3">
                 Allows multiple copies of a single NFT to be minted for a given time interval
+              </span>
+            </button>
+          </div>
+          <div
+            className={clsx(
+              'isolate space-y-1 border-2',
+              'first-of-type:rounded-tl-md last-of-type:rounded-tr-md',
+              minterType === 'token-merge' ? 'border-stargaze' : 'border-transparent',
+              minterType !== 'token-merge' ? 'bg-stargaze/5 hover:bg-stargaze/80' : 'hover:bg-white/5',
+              TOKEN_MERGE_FACTORY_ADDRESS === undefined ? 'hover:bg-zinc-500 opacity-50 hover:opacity-70' : '',
+            )}
+          >
+            <button
+              className="p-4 w-full h-full text-left bg-transparent"
+              disabled={TOKEN_MERGE_FACTORY_ADDRESS === undefined}
+              onClick={() => {
+                setMinterType('token-merge')
+                resetReadyFlags()
+              }}
+              type="button"
+            >
+              <h4 className="font-bold">Burn to Mint Collection</h4>
+              <span className="text-sm text-white/80 line-clamp-2 hover:line-clamp-3">
+                Allows tokens from different collections to be burned to mint a new NFT
               </span>
             </button>
           </div>
@@ -2040,6 +2212,17 @@ const CollectionCreationPage: NextPage = () => {
           onDetailsChange={setOpenEditionMinterDetails}
           openEditionFactoryAddress={openEditionFactoryAddress}
           openEditionMinterCreationFee={openEditionMinterCreationFee}
+        />
+      </Conditional>
+      <Conditional test={minterType === 'token-merge'}>
+        <TokenMergeMinterCreator
+          importedTokenMergeMinterDetails={importedDetails?.tokenMergeMinterDetails}
+          isMatchingFactoryPresent={isMatchingOpenEditionFactoryPresent}
+          minterType={minterType}
+          onChange={setTokenMergeMinterCreatorData}
+          onDetailsChange={setTokenMergeMinterDetails}
+          tokenMergeFactoryAddress={tokenMergeFactoryAddress}
+          tokenMergeMinterCreationFee={tokenMergeMinterCreationFee}
         />
       </Conditional>
       <div className="mx-10">
@@ -2104,7 +2287,7 @@ const CollectionCreationPage: NextPage = () => {
                 numberOfTokens={uploadDetails?.assetFiles.length}
                 onChange={setMintingDetails}
                 uploadMethod={uploadDetails?.uploadMethod as UploadMethod}
-                whitelistStartDate={whitelistDetails?.startTime}
+                whitelistStartDate={(whitelistDetails?.stages ? whitelistDetails.stages[0].startTime : '') as string}
               />
             </Conditional>
           </div>

@@ -38,6 +38,18 @@ export const ibcUsdc: TokenInfo = {
   decimalPlaces: 6,
   imageURL: 'https://raw.githubusercontent.com/cosmos/chain-registry/master/noble/images/USDCoin.svg',
 }
+
+export const ibcOsmo: TokenInfo = {
+  id: 'ibc-osmo',
+  denom:
+    NETWORK === 'mainnet'
+      ? 'ibc/ED07A3391A112B175915CD8FAF43A2DA8E4790EDE12566649D0C2F97716B8518'
+      : 'factory/stars153w5xhuqu3et29lgqk4dsynj6gjn96lr33wx4e/uosmo',
+  displayName: 'OSMO',
+  decimalPlaces: 6,
+  imageURL: 'https://raw.githubusercontent.com/cosmos/chain-registry/master/osmosis/images/osmo.svg',
+}
+
 export const ibcUsk: TokenInfo = {
   id: 'ibc-usk',
   denom:
@@ -49,16 +61,16 @@ export const ibcUsk: TokenInfo = {
   imageURL: 'https://raw.githubusercontent.com/cosmos/chain-registry/master/kujira/images/usk.svg',
 }
 
-export const ibcKuji: TokenInfo = {
-  id: 'ibc-kuji',
-  denom:
-    NETWORK === 'mainnet'
-      ? 'ibc/0E57658B71E9CC4BB0F6FE3E01712966713B49E6FD292E6B66E3F111B103D361'
-      : 'factory/stars153w5xhuqu3et29lgqk4dsynj6gjn96lr33wx4e/ukuji',
-  displayName: 'KUJI',
-  decimalPlaces: 6,
-  imageURL: 'https://raw.githubusercontent.com/cosmos/chain-registry/master/kujira/images/kuji.svg',
-}
+// export const ibcKuji: TokenInfo = {
+//   id: 'ibc-kuji',
+//   denom:
+//     NETWORK === 'mainnet'
+//       ? 'ibc/0E57658B71E9CC4BB0F6FE3E01712966713B49E6FD292E6B66E3F111B103D361'
+//       : 'factory/stars153w5xhuqu3et29lgqk4dsynj6gjn96lr33wx4e/ukuji',
+//   displayName: 'KUJI',
+//   decimalPlaces: 6,
+//   imageURL: 'https://raw.githubusercontent.com/cosmos/chain-registry/master/kujira/images/kuji.svg',
+// }
 
 export const ibcFrnz: TokenInfo = {
   id: 'ibc-frnz',
@@ -136,11 +148,12 @@ export const nativeBrnch: TokenInfo = {
 export const tokensList = [
   stars,
   ibcAtom,
+  ibcOsmo,
   ibcUsdc,
   ibcUsk,
   ibcFrnz,
   ibcNbtc,
-  ibcKuji,
+  // ibcKuji,
   // ibcHuahua,
   ibcCrbrus,
   ibcTia,

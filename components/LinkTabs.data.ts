@@ -184,3 +184,21 @@ export const snapshotLinkTabs: LinkTabProps[] = [
     href: '/snapshots/chain',
   },
 ]
+
+export const manageContractAdminLinkTabs: LinkTabProps[] = [
+  {
+    title: 'Update Collection Admin',
+    description: `Transfer all collection admin privileges to a new address`,
+    href: '/contracts/manageContractAdmin/updateCollectionAdmin',
+  },
+  {
+    title: 'Update Contract Admin',
+    description: `Update the admin address of a contract`,
+    href: '/contracts/manageContractAdmin/updateAdmin',
+  },
+  {
+    title: 'Clear Contract Admin',
+    description: `Clear the admin address of a contract`,
+    href: '/contracts/manageContractAdmin/clearAdmin',
+  },
+]
